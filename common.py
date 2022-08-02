@@ -17,7 +17,7 @@ def setup_logging(logger, syslog_socket, log_format, log_level='DEBUG'):
 
     if log_level not in ['CRITICAL', 'ERROR', 'WARNING',
                          'INFO', 'DEBUG', 'NOTSET']:
-        raise Exception('Invalid log level: {}'.format(log_level.upper()))
+        raise Exception(f'Invalid log level: {log_level.upper()}')
 
     logger.setLevel(getattr(logging, log_level))
 
@@ -133,6 +133,4 @@ def set_logging_args(parser):
 def cleanup_json(data):
     if isinstance(data, dict):
         return {k: cleanup_json(v) for k, v in data.items() if v is not None}
-    if isinstance(data, list):
-        return [cleanup_json(e) for e in data]
-    return data
+    return [cleanup_json(e) for e in data] if isinstance(data, list) else data

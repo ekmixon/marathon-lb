@@ -83,7 +83,7 @@ listen stats
 '''
 
     def test_config_no_apps(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -109,7 +109,7 @@ frontend marathon_https_in
         self.assertMultiLineEqual(config, expected)
 
     def test_config_env_template(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -141,7 +141,7 @@ frontend marathon_https_in
         self.assertMultiLineEqual(config, expected)
 
     def test_config_with_ssl_no_apps(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = "/etc/haproxy/mysite.com.pem"
@@ -165,7 +165,7 @@ frontend marathon_https_in
         self.assertMultiLineEqual(config, expected)
 
     def test_config_with_multissl_no_apps(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = "/etc/haproxy/mysite1.com.pem,/etc/haproxy/mysite2.com.pem"
@@ -185,12 +185,12 @@ frontend marathon_http_appid_in
 frontend marathon_https_in
 '''
         expected += "  bind *:443 ssl crt /etc/haproxy/mysite1.com.pem " \
-                    "crt /etc/haproxy/mysite2.com.pem"
+                        "crt /etc/haproxy/mysite2.com.pem"
         expected += "\n  mode http\n"
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -247,7 +247,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_healthcheck_command(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -300,7 +300,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_vhost(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -361,7 +361,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_multiple_vhost(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -424,7 +424,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_vhost_and_redirect(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -487,7 +487,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_multiple_vhost_and_redirect(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -551,7 +551,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_vhost_with_auth(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -624,7 +624,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_multiple_vhost_and_auth(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -702,7 +702,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_vhost_with_path_and_auth(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -860,7 +860,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_vhost_with_path(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -991,7 +991,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_vhost_with_path_and_redirect(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1197,7 +1197,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_balance(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1371,7 +1371,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_healthcheck_port(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1428,7 +1428,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_healthcheck_port_using_another_portindex(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1505,7 +1505,7 @@ backend nginx_10001
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_healthcheck_port_diff_portindex_and_group(self):
-        apps = dict()
+        apps = {}
         groups = ['external', 'internal']
         bind_http_https = True
         ssl_certs = ""
@@ -1589,7 +1589,7 @@ backend nginx_10001
         then the app idx-th backend is returned instead.
         :return:
         """
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1666,7 +1666,7 @@ backend nginx_10001
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_tcp_healthcheck(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1724,7 +1724,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_haproxy_group_fallback(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1779,7 +1779,7 @@ backend nginx_10001
         self.assertMultiLineEqual(config, expected)
 
     def test_config_haproxy_group_per_service(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1824,7 +1824,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_haproxy_group_hybrid(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1871,7 +1871,7 @@ backend nginx_10001
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_proxypass(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1925,7 +1925,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_revproxy(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -1980,7 +1980,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_redirect(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -2035,7 +2035,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_simple_app_sticky(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""
@@ -2079,7 +2079,7 @@ backend nginx_10000
         self.assertMultiLineEqual(config, expected)
 
     def test_config_multi_app_multiple_vhost_with_path(self):
-        apps = dict()
+        apps = {}
         groups = ['external']
         bind_http_https = True
         ssl_certs = ""

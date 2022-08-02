@@ -9,7 +9,7 @@ logger = logging.getLogger('marathon_lb')
 class ConfigTemplate:
     def __init__(self, name, value, overridable, description):
         self.name = name
-        self.full_name = 'HAPROXY_' + name
+        self.full_name = f'HAPROXY_{name}'
         self.value = value
         self.default_value = value
         self.overridable = overridable
@@ -24,8 +24,10 @@ class ConfigTemplater(object):
         default = 'redispatch,http-server-close,dontlognull'
         options = os.getenv('HAPROXY_GLOBAL_DEFAULT_OPTIONS', default)
         template = '  option            {opt}\n'
-        lines = sorted(set(template.format(opt=opt.strip())
-                           for opt in options.split(',')))
+        lines = sorted(
+            {template.format(opt=opt.strip()) for opt in options.split(',')}
+        )
+
         return ''.join(lines)
 
     def load(self):
@@ -816,7 +818,7 @@ Use with HAPROXY_TCP_BACKEND_ACL_ALLOW_DENY.
 
     def __init__(self, directory='templates'):
         self.__template_directory = directory
-        self.t = dict()
+        self.t = {}
         self.load()
         self.__load_templates()
 
@@ -874,7 +876,7 @@ Specified as {specifiedAs}.
 
         for tname in sorted(self.t.keys()):
             t = self.t[tname]
-            spec = "`HAPROXY_" + t.name + "` template"
+            spec = f"`HAPROXY_{t.name}` template"
             if t.overridable:
                 spec += " or with label `HAPROXY_{n}_" + t.name + "`"
             descriptions += desc_template.format(
@@ -917,11 +919,11 @@ Specified as {specifiedAs}.
                 if label.name == 'GROUP':
                     # this one is a special snowflake
                     spec = "`HAPROXY_{n}_" + label.name + "`" + " or " + \
-                        "`HAPROXY_" + label.name + "`"
+                            "`HAPROXY_" + label.name + "`"
                 elif label.perServicePort:
                     spec = "`HAPROXY_{n}_" + label.name + "`"
                 else:
-                    spec = "`HAPROXY_" + label.name + "`"
+                    spec = f"`HAPROXY_{label.name}`"
                 descriptions += desc_template.format(
                     full_name=label.full_name.replace('_{0}_', '_{n}_'),
                     specifiedAs=spec,
@@ -989,13 +991,13 @@ Specified as {specifiedAs}.
     def haproxy_http_frontend_acl_with_auth_and_path(self, app):
         if 'HAPROXY_{0}_HTTP_FRONTEND_ACL_WITH_AUTH_AND_PATH' in app.labels:
             return \
-                app.labels['HAPROXY_{0}_HTTP_FRONTEND_ACL_WITH_AUTH_AND_PATH']
+                    app.labels['HAPROXY_{0}_HTTP_FRONTEND_ACL_WITH_AUTH_AND_PATH']
         return self.t['HTTP_FRONTEND_ACL_WITH_AUTH_AND_PATH'].value
 
     def haproxy_https_frontend_acl_with_auth_and_path(self, app):
         if 'HAPROXY_{0}_HTTPS_FRONTEND_ACL_WITH_AUTH_AND_PATH' in app.labels:
             return \
-                app.labels['HAPROXY_{0}_HTTPS_FRONTEND_ACL_WITH_AUTH_AND_PATH']
+                    app.labels['HAPROXY_{0}_HTTPS_FRONTEND_ACL_WITH_AUTH_AND_PATH']
         return self.t['HTTPS_FRONTEND_ACL_WITH_AUTH_AND_PATH'].value
 
     def haproxy_frontend_head(self, app):
@@ -1010,9 +1012,9 @@ Specified as {specifiedAs}.
 
     def haproxy_backend_redirect_http_to_https_with_path(self, app):
         if 'HAPROXY_{0}_BACKEND_REDIRECT_HTTP_TO_HTTPS_WITH_PATH' in\
-          app.labels:
+              app.labels:
             return app.\
-                labels['HAPROXY_{0}_BACKEND_REDIRECT_HTTP_TO_HTTPS_WITH_PATH']
+                    labels['HAPROXY_{0}_BACKEND_REDIRECT_HTTP_TO_HTTPS_WITH_PATH']
         return self.t['BACKEND_REDIRECT_HTTP_TO_HTTPS_WITH_PATH'].value
 
     def haproxy_backend_hsts_options(self, app):
@@ -1053,7 +1055,7 @@ Specified as {specifiedAs}.
     def haproxy_http_frontend_routing_only_with_auth(self, app):
         if 'HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_AUTH' in app.labels:
             return app.\
-                labels['HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_AUTH']
+                    labels['HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_AUTH']
         return self.t['HTTP_FRONTEND_ROUTING_ONLY_WITH_AUTH'].value
 
     def haproxy_http_frontend_acl_with_path(self, app):
@@ -1068,10 +1070,10 @@ Specified as {specifiedAs}.
 
     def haproxy_http_frontend_acl_only_with_path_and_auth(self, app):
         if 'HAPROXY_{0}_HTTP_FRONTEND_ACL_ONLY_WITH_PATH_AND_AUTH'\
-         in app.labels:
+             in app.labels:
             return\
-             app.\
-             labels['HAPROXY_{0}_HTTP_FRONTEND_ACL_ONLY_WITH_PATH_AND_AUTH']
+                 app.\
+                 labels['HAPROXY_{0}_HTTP_FRONTEND_ACL_ONLY_WITH_PATH_AND_AUTH']
         return self.t['HTTP_FRONTEND_ACL_ONLY_WITH_PATH_AND_AUTH'].value
 
     def haproxy_https_frontend_acl_only_with_path(self, app):
@@ -1082,15 +1084,15 @@ Specified as {specifiedAs}.
     def haproxy_http_frontend_routing_only_with_path(self, app):
         if 'HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_PATH' in app.labels:
             return \
-                app.labels['HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_PATH']
+                    app.labels['HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_PATH']
         return self.t['HTTP_FRONTEND_ROUTING_ONLY_WITH_PATH'].value
 
     def haproxy_http_frontend_routing_only_with_path_and_auth(self, app):
         if 'HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_PATH_AND_AUTH'\
-         in app.labels:
+             in app.labels:
             return\
-             app.\
-             labels[
+                 app.\
+                 labels[
                 'HAPROXY_{0}_HTTP_FRONTEND_ROUTING_ONLY_WITH_PATH_AND_AUTH']
         return self.t['HTTP_FRONTEND_ROUTING_ONLY_WITH_PATH_AND_AUTH'].value
 
@@ -1161,7 +1163,7 @@ Specified as {specifiedAs}.
 
     def haproxy_backend_server_http_healthcheck_options(self, app):
         if 'HAPROXY_{0}_BACKEND_SERVER_HTTP_HEALTHCHECK_OPTIONS' in \
-                app.labels:
+                    app.labels:
             return self.__blank_prefix_or_empty(
                 app.labels['HAPROXY_{0}_BACKEND' +
                            '_SERVER_HTTP_HEALTHCHECK_OPTIONS']
@@ -1194,10 +1196,7 @@ Specified as {specifiedAs}.
         return self.t['TCP_BACKEND_NETWORK_ALLOWED_ACL'].value
 
     def __blank_prefix_or_empty(self, s):
-        if s:
-            return ' ' + s
-        else:
-            return s
+        return f' {s}' if s else s
 
 
 def string_to_bool(s):
@@ -1300,23 +1299,24 @@ class Label:
     def __init__(self, name, func, description, perServicePort=True):
         self.name = name
         self.perServicePort = perServicePort
-        if perServicePort:
-            self.full_name = 'HAPROXY_{0}_' + name
-        else:
-            self.full_name = 'HAPROXY_' + name
+        self.full_name = 'HAPROXY_{0}_' + name if perServicePort else f'HAPROXY_{name}'
         self.func = func
         self.description = description
 
 
-labels = []
-labels.append(Label(name='AUTH',
-                    func=set_auth,
-                    description='''\
+labels = [
+    Label(
+        name='AUTH',
+        func=set_auth,
+        description='''\
 The http basic auth definition. \
 For details on configuring auth, see: \
 https://github.com/mesosphere/marathon-lb/wiki/HTTP-Basic-Auth
 
-Ex: `HAPROXY_0_AUTH = realm:username:encryptedpassword`'''))
+Ex: `HAPROXY_0_AUTH = realm:username:encryptedpassword`''',
+    )
+]
+
 labels.append(Label(name='VHOST',
                     func=set_hostname,
                     description='''\
@@ -1692,8 +1692,4 @@ labels.append(Label(name='TCP_BACKEND_NETWORK_ALLOWED_ACL',
 
 labels.sort(key=lambda l: l.name)
 
-label_keys = {}
-for label in labels:
-    if not label.func:
-        continue
-    label_keys[label.full_name] = label.func
+label_keys = {label.full_name: label.func for label in labels if label.func}

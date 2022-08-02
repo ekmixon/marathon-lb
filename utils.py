@@ -61,7 +61,7 @@ class ServicePortAssigner(object):
         ports = self.ports_by_app.values()
         port = None
         for i in range(MAX_CLASHES):
-            hash_str = "%s-%s-%s" % (app['id'], task_port, i)
+            hash_str = f"{app['id']}-{task_port}-{i}"
             hash_val = hashlib.sha1(hash_str.encode("utf-8")).hexdigest()
             hash_int = int(hash_val[:8], 16)
             trial_port = self.min_port + (hash_int % self.max_ports)
@@ -115,7 +115,7 @@ class ServicePortAssigner(object):
         become exhausted, a port may be returned as None.
         """
         mode = get_app_networking_mode(app)
-        if mode == "container" or mode == "container/bridge":
+        if mode in ["container", "container/bridge"]:
             # Here we must use portMappings
             portMappings = get_app_port_mappings(app)
             if len(portMappings) > 0:
@@ -135,7 +135,7 @@ class ServicePortAssigner(object):
         ports = list(ports)  # wtf python?
         # This supports legacy ip-per-container for Marathon 1.4.x and prior
         if not ports and mode == "container" and self.can_assign \
-                and len(app['tasks']) > 0:
+                    and len(app['tasks']) > 0:
             task = app['tasks'][0]
             task_ports = get_app_task_ports(app, task, mode)
             if len(task_ports) > 0:
@@ -177,7 +177,7 @@ class CurlHttpEventStream(object):
 
         if auth and type(auth) is DCOSAuth:
             auth.refresh_auth_header()
-            headers.append('Authorization: %s' % auth.auth_header)
+            headers.append(f'Authorization: {auth.auth_header}')
         elif auth:
             self.curl.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
             self.curl.setopt(pycurl.USERPWD, '%s:%s' % auth)
@@ -208,8 +208,8 @@ class CurlHttpEventStream(object):
     def _check_status_code(self):
         if self.status_code == 0:
             self.status_code = self.curl.getinfo(pycurl.HTTP_CODE)
-        if self.status_code != 0 and self.status_code != 200:
-            raise Exception(str(self.status_code) + ' ' + self.url)
+        if self.status_code not in [0, 200]:
+            raise Exception(f'{str(self.status_code)} {self.url}')
 
     def _perform_on_curl(self):
         while True:
@@ -255,9 +255,7 @@ class CurlHttpEventStream(object):
             else:
                 pending = None
 
-            for line in lines:
-                yield line
-
+            yield from lines
         if pending is not None:
             yield pending
 
@@ -269,14 +267,13 @@ def resolve_ip(host):
     cached_ip = ip_cache.get().get(host, "")
     if cached_ip != "":
         return cached_ip
-    else:
-        try:
-            logger.debug("trying to resolve ip address for host %s", host)
-            ip = socket.gethostbyname(host)
-            ip_cache.get().set(host, ip)
-            return ip
-        except socket.gaierror:
-            return ""
+    try:
+        logger.debug("trying to resolve ip address for host %s", host)
+        ip = socket.gethostbyname(host)
+        ip_cache.get().set(host, ip)
+        return ip
+    except socket.gaierror:
+        return ""
 
 
 class LRUCacheSingleton(object):
@@ -332,7 +329,6 @@ def get_task_ip(task, mode):
             logger.warning("Task %s does not yet have an ip address allocated",
                            task['id'])
             return ""
-        return task_ip
     else:
         host = task.get('host', "")
         if host == "":
@@ -343,7 +339,8 @@ def get_task_ip(task, mode):
             logger.warning("Could not resolve ip for host %s, ignoring",
                            host)
             return ""
-        return task_ip
+
+    return task_ip
 
 
 def get_app_port_mappings(app):
@@ -402,23 +399,17 @@ def get_app_task_ports(app, task, mode):
     """
     if mode == 'host':
         task_ports = get_task_ports(task)
-        if len(task_ports) > 0:
-            return task_ports
-        return get_port_definition_ports(app)
+        return task_ports if len(task_ports) > 0 else get_port_definition_ports(app)
     elif mode == 'container/bridge':
         task_ports = get_task_ports(task)
         if len(task_ports) > 0:
             return task_ports
         # Will only work for Marathon < 1.5
         task_ports = get_port_definition_ports(app)
-        if len(task_ports) > 0:
-            return task_ports
-        return get_port_mapping_ports(app)
+        return task_ports if len(task_ports) > 0 else get_port_mapping_ports(app)
     else:
         task_ports = get_ip_address_discovery_ports(app)
-        if len(task_ports) > 0:
-            return task_ports
-        return get_port_mapping_ports(app)
+        return task_ports if len(task_ports) > 0 else get_port_mapping_ports(app)
 
 
 def get_task_ip_and_ports(app, task):

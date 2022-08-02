@@ -94,7 +94,7 @@ class TestDuplicatedOptions(TestMarathonUpdateHaproxy):
     def setUp(self):
         self.maxDiff = None
         os.environ['HAPROXY_GLOBAL_DEFAULT_OPTIONS'] = \
-            'httplog,tcplog,dontlognull,tcplog'
+                'httplog,tcplog,dontlognull,tcplog'
         base_config = base_config_prefix
         base_config += template_option('dontlognull')
         base_config += template_option('httplog')

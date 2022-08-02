@@ -122,9 +122,8 @@ class MarathonService(object):
         self.backend_weight = 0
         self.network_allowed = None
         self.healthcheck_port_index = None
-        if healthCheck:
-            if healthCheck['protocol'] == 'HTTP':
-                self.mode = 'http'
+        if healthCheck and healthCheck['protocol'] == 'HTTP':
+            self.mode = 'http'
 
     def add_backend(self, host, ip, port, draining):
         self.backends.add(MarathonBackend(host, ip, port, draining))
@@ -147,7 +146,7 @@ class MarathonApp(object):
         self.appId = appId
 
         # port -> MarathonService
-        self.services = dict()
+        self.services = {}
 
     def __hash__(self):
         return hash(self.appId)
@@ -200,9 +199,7 @@ class Marathon(object):
 
                 resp_json = cleanup_json(response.json())
                 if 'message' in resp_json:
-                    response.reason = "%s (%s)" % (
-                        response.reason,
-                        resp_json['message'])
+                    response.reason = f"{response.reason} ({resp_json['message']})"
 
                 return response
 
@@ -253,7 +250,7 @@ class Marathon(object):
             params['event_type'] = events
 
         url_params = urllib.parse.urlencode(params, doseq=True)
-        url = '{}/v2/events?{}'.format(self.current_host, url_params)
+        url = f'{self.current_host}/v2/events?{url_params}'
 
         return CurlHttpEventStream(url, self.__auth, self.__verify)
 
@@ -270,8 +267,7 @@ class Marathon(object):
                 for real_event_data in re.split(r'\r\n',
                                                 line.decode('utf-8')):
                     if real_event_data[:6] == "data: ":
-                        event = Event(data=real_event_data[6:])
-                        yield event
+                        yield Event(data=real_event_data[6:])
 
     @property
     def host(self):
@@ -288,10 +284,7 @@ def has_group(groups, app_groups):
         raise Exception("No groups specified")
 
     # Contains matching groups
-    if (len(frozenset(app_groups) & groups)):
-        return True
-
-    return False
+    return bool((len(frozenset(app_groups) & groups)))
 
 
 def get_backend_port(apps, app, idx):
@@ -350,10 +343,12 @@ def _get_health_check_options(template, health_check, health_check_port):
         healthCheckIntervalSeconds=health_check['intervalSeconds'],
         healthCheckGracePeriodSeconds=health_check['gracePeriodSeconds'],
         healthCheckMaxConsecutiveFailures=health_check[
-            'maxConsecutiveFailures'],
+            'maxConsecutiveFailures'
+        ],
         healthCheckFalls=health_check['maxConsecutiveFailures'] + 1,
-        healthCheckPortOptions=' port ' + str(
-            health_check_port) if health_check_port else ''
+        healthCheckPortOptions=f' port {str(health_check_port)}'
+        if health_check_port
+        else '',
     )
 
 
@@ -395,7 +390,7 @@ def calculate_server_id(server_name, taken_server_ids):
             An integer depicting the server ID
     """
     if server_name == '' or server_name is None:
-        raise ValueError("Malformed server name: {}".format(server_name))
+        raise ValueError(f"Malformed server name: {server_name}")
 
     server_name_encoded = server_name.encode('utf-8')
     server_name_shasum = hashlib.sha256(server_name_encoded).hexdigest()

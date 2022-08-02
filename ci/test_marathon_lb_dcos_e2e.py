@@ -42,7 +42,7 @@ OSS = 'oss'
 ENTERPRISE = 'enterprise'
 VARIANTS = {OSS: dcos_installer_tools.DCOSVariant.OSS,
             ENTERPRISE: dcos_installer_tools.DCOSVariant.ENTERPRISE}
-VARIANT_VALUES = dict((value.value, value) for value in VARIANTS.values())
+VARIANT_VALUES = {value.value: value for value in VARIANTS.values()}
 
 
 logging.captureWarnings(True)
@@ -111,23 +111,23 @@ class Secrets(dcos_helpers.ApiClientSession):
     @staticmethod
     def secret_uri(store, path):
         if not path.startswith('/'):
-            path = '/' + path
-        return '/secret/{}{}'.format(store, path)
+            path = f'/{path}'
+        return f'/secret/{store}{path}'
 
 
 def add_user_to_group(self, user, group):
-    return self.put('/groups/{}/users/{}'.format(group, user))
+    return self.put(f'/groups/{group}/users/{user}')
 
 
 def delete_user_from_group(self, user, group):
     if not self.user_in_group(user, group):
         return
 
-    return self.delete('/groups/{}/users/{}'.format(group, user))
+    return self.delete(f'/groups/{group}/users/{user}')
 
 
 def list_group_users(self, group):
-    r = self.get('/groups/{}/users'.format(group))
+    r = self.get(f'/groups/{group}/users')
     r.raise_for_status()
     return r.json()['array']
 
@@ -186,10 +186,7 @@ class Cluster(cluster.Cluster):
         output = self._any_master_run(cmd, shell=True)
         stdout = output.stdout.decode()
 
-        if stdout.strip().split('\n')[-1] == self._USER_OSS_EMAIL:
-            return True
-
-        return False
+        return stdout.strip().split('\n')[-1] == self._USER_OSS_EMAIL
 
     def _create_oss_user(self):
         if self._oss_user_exists:
@@ -231,23 +228,19 @@ class Cluster(cluster.Cluster):
 
     def _oss_session(self):
         api = dcos_api.DcosApiSession(
-            dcos_url='http://{}'.format(self._any_master.public_ip_address),
+            dcos_url=f'http://{self._any_master.public_ip_address}',
             masters=[str(n.public_ip_address) for n in self.masters],
             slaves=[str(n.public_ip_address) for n in self.agents],
-            public_slaves=[
-                str(n.public_ip_address) for n in self.public_agents
-            ],
+            public_slaves=[str(n.public_ip_address) for n in self.public_agents],
             auth_user=dcos_api.DcosUser(credentials=self.credentials),
         )
+
 
         api.login_default_user()
         return api
 
     def _session(self):
-        if self.enterprise:
-            return self._enterprise_session()
-
-        return self._oss_session()
+        return self._enterprise_session() if self.enterprise else self._oss_session()
 
     @property
     def credentials(self):
@@ -307,7 +300,7 @@ class Cluster(cluster.Cluster):
             return
 
         if description is None:
-            description = '{} service account'.format(name)
+            description = f'{name} service account'
 
         key = rsa.generate_private_key(
             public_exponent=65537,
@@ -470,16 +463,14 @@ def dcos_version(dcos_marathon_lb_session):
     return dcos_marathon_lb_session.get_version()
 
 
-@pytest.fixture(scope='session',
-                params=(['backends/' + f
-                         for f in os.listdir('backends')] +
-                        ['backends_1.9/' + f
-                         for f in os.listdir('backends_1.9')]))
+@pytest.fixture(scope='session', params=([f'backends/{f}' for f in os.listdir('backends')] + [f'backends_1.9/{f}' for f in os.listdir('backends_1.9')]))
 def backend_app(request, dcos_version):
     if dcos_version.startswith('1.9.'):
-        if not request.param.startswith('backends_1.9/'):
-            return pytest.skip('Not a 1.9 backend')
-        return test_marathon_lb.get_json(request.param)
+        return (
+            test_marathon_lb.get_json(request.param)
+            if request.param.startswith('backends_1.9/')
+            else pytest.skip('Not a 1.9 backend')
+        )
 
     if request.param.startswith('backends_1.9/'):
         return pytest.skip('Not a 1.9 cluster')
